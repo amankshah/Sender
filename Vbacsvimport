@@ -45,6 +45,7 @@ Function GetDataFromCSV(ByVal filePath As String) As Variant
     Dim data() As String
     Dim rowData() As String
     Dim row As Long, col As Long
+    Dim rowCount As Long, colCount As Long
     
     'Open the CSV file and read its content
     fileNum = FreeFile
@@ -56,13 +57,18 @@ Function GetDataFromCSV(ByVal filePath As String) As Variant
     linesArray() = Split(fileContent, vbCrLf)
     
     'Determine number of rows and columns
-    ReDim data(1 To UBound(linesArray) + 1, 1 To 1)
+    rowCount = UBound(linesArray) - LBound(linesArray) + 1
+    rowData() = Split(linesArray(0), ",")
+    colCount = UBound(rowData) - LBound(rowData) + 1
     
-    'Split each line into columns
-    For row = 1 To UBound(linesArray) + 1
+    'Resize data array
+    ReDim data(1 To rowCount, 1 To colCount)
+    
+    'Fill data array
+    For row = 1 To rowCount
         rowData() = Split(linesArray(row - 1), ",")
-        For col = 1 To UBound(rowData) + 1
-            data(row, col) = rowData(col - 1)
+        For col = 1 To colCount
+            data(row, col) = rowData(col - LBound(rowData) + LBound(data, 2))
         Next col
     Next row
     
