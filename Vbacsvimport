@@ -50,6 +50,8 @@ Function GetDataFromCSV(ByVal filePath As String) As Variant
     Dim row As Long, col As Long
     Dim rowCount As Long, colCount As Long
     
+    On Error GoTo ErrorHandler
+
     'Open the CSV file and read its content
     fileNum = FreeFile
     Open filePath For Input As fileNum
@@ -71,10 +73,18 @@ Function GetDataFromCSV(ByVal filePath As String) As Variant
     For row = 1 To rowCount
         rowData() = Split(linesArray(row - 1), ",")
         For col = 1 To colCount
-            data(row, col) = rowData(col - LBound(rowData) + LBound(data, 2))
+            If LBound(rowData) <= col - 1 And col - 1 <= UBound(rowData) Then
+                data(row, col) = rowData(col - LBound(rowData) + LBound(data, 2))
+            End If
         Next col
     Next row
     
     'Return data array
     GetDataFromCSV = data
+    
+    Exit Function
+    
+ErrorHandler:
+    MsgBox "Error reading CSV file. Please check the file format and try again.", vbExclamation
+    GetDataFromCSV = Empty
 End Function
