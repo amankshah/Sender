@@ -1,0 +1,68 @@
+import com.twilio.Twilio;
+import com.twilio.base.ResourceSet;
+import com.twilio.rest.api.v2010.account.Message;
+import com.twilio.type.PhoneNumber;
+
+public class TwilioMessageFetcher {
+
+    // Twilio API credentials
+    public static final String ACCOUNT_SID = "YOUR_ACCOUNT_SID";
+    public static final String AUTH_TOKEN = "YOUR_AUTH_TOKEN";
+
+    public static void main(String[] args) {
+        // Initialize Twilio
+        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+
+        // Fetch and process the latest message
+        String latestCode = fetchLatestMessage();
+
+        // Print the latest 6-character numerical value
+        System.out.println("Latest 6-character numerical value: " + latestCode);
+    }
+
+    // Function to fetch the latest message from Twilio and return its 6-character numerical value
+    public static String fetchLatestMessage() {
+        // Fetch the messages
+        ResourceSet<Message> messages = Message.reader().read();
+
+        if (messages != null && !messages.isEmpty()) {
+            // Get the latest message
+            Message latestMessage = messages.iterator().next();
+
+            // Extract message details
+            String from = latestMessage.getFrom().toString();
+            String to = latestMessage.getTo().toString();
+            String body = latestMessage.getBody();
+            String time = latestMessage.getDateSent().toString();
+
+            // Extract the 6-character numerical value from the message body
+            String latestCode = extractCode(body);
+
+            // Update and display message details
+            System.out.println("Latest message details:");
+            System.out.println("From: " + from);
+            System.out.println("To: " + to);
+            System.out.println("Message Body: " + body);
+            System.out.println("Time: " + time);
+
+            return latestCode;
+        } else {
+            System.out.println("No messages found.");
+            return null;
+        }
+    }
+
+    // Function to extract the 6-character numerical value from the message body
+    public static String extractCode(String body) {
+        // Assuming the code is a 6-digit numerical value
+        String regex = "\\b\\d{6}\\b";
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        java.util.regex.Matcher matcher = pattern.matcher(body);
+        
+        if (matcher.find()) {
+            return matcher.group();
+        } else {
+            return null;
+        }
+    }
+}
