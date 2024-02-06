@@ -1,0 +1,71 @@
+Sub ImportCSV()
+    Dim fileName As Variant
+    Dim ws As Worksheet
+    Dim targetRow As Long
+    Dim sourceData As Variant
+    Dim importedData As Variant
+    Dim col As Long, i As Long
+    
+    'Prompt user to select CSV file
+    fileName = Application.GetOpenFilename("CSV Files (*.csv), *.csv", , "Select CSV File")
+    
+    'Exit if user cancels selection
+    If fileName = False Then Exit Sub
+    
+    'Clear existing data in Sheet1
+    Sheets("Sheet1").UsedRange.Clear
+    
+    'Set reference to Sheet1
+    Set ws = ThisWorkbook.Sheets("Sheet1")
+    
+    'Read data from CSV file
+    sourceData = WorksheetFunction.Transpose(GetDataFromCSV(fileName))
+    
+    'Import only required columns
+    targetRow = 1
+    For col = LBound(sourceData, 2) To UBound(sourceData, 2)
+        If sourceData(1, col) Like "*Project Manager*" Or sourceData(1, col) Like "*Labels*" Or sourceData(1, col) Like "*Story Points*" Then
+            For i = LBound(sourceData, 1) To UBound(sourceData, 1)
+                importedData(i, targetRow) = sourceData(i, col)
+            Next i
+            targetRow = targetRow + 1
+        End If
+    Next col
+    
+    'Paste imported data to Sheet1
+    ws.Range("A1").Resize(UBound(importedData, 1), UBound(importedData, 2)).Value = importedData
+
+    MsgBox "Data imported successfully.", vbInformation
+End Sub
+
+Function GetDataFromCSV(ByVal filePath As String) As Variant
+    Dim fileNum As Integer
+    Dim fileContent As String
+    Dim linesArray() As String
+    Dim data() As String
+    Dim rowData() As String
+    Dim row As Long, col As Long
+    
+    'Open the CSV file and read its content
+    fileNum = FreeFile
+    Open filePath For Input As fileNum
+    fileContent = Input$(LOF(fileNum), fileNum)
+    Close fileNum
+    
+    'Split content into lines
+    linesArray() = Split(fileContent, vbCrLf)
+    
+    'Determine number of rows and columns
+    ReDim data(1 To UBound(linesArray) + 1, 1 To 1)
+    
+    'Split each line into columns
+    For row = 1 To UBound(linesArray) + 1
+        rowData() = Split(linesArray(row - 1), ",")
+        For col = 1 To UBound(rowData) + 1
+            data(row, col) = rowData(col - 1)
+        Next col
+    Next row
+    
+    'Return data array
+    GetDataFromCSV = data
+End Function
