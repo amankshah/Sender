@@ -21,6 +21,9 @@ Sub ImportCSV()
     'Read data from CSV file
     sourceData = WorksheetFunction.Transpose(GetDataFromCSV(fileName))
     
+    ' Dimension the importedData array
+    ReDim importedData(1 To UBound(sourceData, 1), 1 To 1)
+    
     'Import only required columns
     targetRow = 1
     For col = LBound(sourceData, 2) To UBound(sourceData, 2)
